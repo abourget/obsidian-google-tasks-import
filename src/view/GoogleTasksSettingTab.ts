@@ -6,10 +6,12 @@ import {
 	Notice,
 	ButtonComponent,
 	Platform,
+	DropdownComponent,
 } from "obsidian";
 import { customSetting } from "../helper/CustomSettingElement";
 import { LoginGoogle } from "../googleApi/GoogleAuth";
 import type GoogleTasks from "../GoogleTasksPlugin";
+import { getAllTaskLists } from "../googleApi/ListAllTasks";
 import { GoogleTaskView, VIEW_TYPE_GOOGLE_TASK } from "./GoogleTaskView";
 import { getRT, setAT, setET, setRT } from "../helper/LocalStorage";
 
@@ -51,6 +53,7 @@ export class GoogleTasksSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.googleClientSecret = value;
 						await this.plugin.saveSettings();
+						refreshTaskLists()
 					})
 			);
 
@@ -126,6 +129,59 @@ export class GoogleTasksSettingTab extends PluginSettingTab {
 				);
 		}
 
+		// const taskListDropdown = new DropdownComponent(containerEl)
+		// 	.setName("Task List")
+		// 	.setDesc("Select a task list")
+		// 	.setValue(this.plugin.settings.selectedTaskList)
+		// 	.onChange(async (value) => {
+		// 		this.plugin.settings.selectedTaskList = value;
+		// 		await this.plugin.saveSettings();
+		// 	});
+
+		// const refreshTaskLists = async () => { {
+		// 	taskListDropdown.clearOptions();
+		// 	const taskLists = await getAllTaskLists(this.plugin);
+		// 	taskLists.forEach((taskList) => {
+		// 		taskListDropdown.addOption(taskList.id, taskList.title);
+		// 	});
+		// };
+
+		// refreshTaskLists();
+
+
+		const taskListSetting = new Setting(containerEl)
+			.setName("Task List To Import From")
+			.setDesc("Select the task list to import tasks from")
+			.addDropdown((dropdown) => {
+				dropdown.setValue(this.plugin.settings.importTaskList);
+				dropdown.onChange(async (value) => {
+					this.plugin.settings.importTaskList = value
+					await this.plugin.saveSettings()
+				})
+				dropdown.addOption("", "Loading...")
+			})
+
+		const refreshTaskLists = async () => {
+			// taskListSetting.components.forEach((component) => {
+			// 	taskListSetting.components.remove(component)
+			// });
+			const ctrl = taskListSetting.components[0] as DropdownComponent
+
+			ctrl.selectEl.empty()
+
+			if (!settingsAreCompleteAndLoggedIn(this.plugin)) {
+				ctrl.addOption(this.plugin.settings.importTaskList, "Login first")
+				return
+			}
+
+			const tasks = {};
+			const taskLists = await getAllTaskLists(this.plugin)
+			for (const taskList of taskLists) {
+				tasks[taskList.id] = taskList.title;
+			}
+			ctrl.addOptions(tasks)
+		}
+
 		new Setting(containerEl)
 			.setName("Confirmations")
 			.setDesc("Ask for confirmations when deleting a task")
@@ -171,6 +227,8 @@ export class GoogleTasksSettingTab extends PluginSettingTab {
 				});
 			await this.plugin.saveSettings();
 		});
+
+		refreshTaskLists()
 	}
 }
 

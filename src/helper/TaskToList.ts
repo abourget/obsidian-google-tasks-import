@@ -1,9 +1,24 @@
 import type { Task } from 'src/helper/types';
 
 export const taskToList = (task: Task): string => {
-    let date = "-----------";
-    if (task.due) {
-        date = window.moment.utc(task.due).local().format("YYYY-MM-DD");
+    const elements = [
+        `- [${task.status=="completed"? "x": " "}]`,
+    ]
+    elements.push(`[gt](https://tasks.google.com#id=${task.id})`)
+    elements.push(task.title)
+    if (task.links && task.links.length > 0) {
+        for (const link of task.links) {
+            elements.push(`[${link.description}](${link.link})`);
+        }
     }
-	return `- [${task.status=="completed"? "x": " "}] ${date} ${task.title}  %%${task.id}%%\n`;
+    if (task.due) {
+        const date = window.moment.utc(task.due).local().format("YYYY-MM-DD");
+        elements.push(`(@${date})`)
+    }
+    if (task.notes) {
+        const indented = task.notes.replaceAll("\n", "\n\t")
+        elements.push(`\n\t${indented}`)
+    }
+
+    return elements.join(" ") + "\n"
 }

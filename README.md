@@ -1,61 +1,73 @@
-# Obsidian Google Tasks
+# Obsidian Google Tasks Importer
 
-Manage your Google Tasks from inside Obsidian
+Thanks to YukiGasai for his original https://github.com/YukiGasai/obsidian-google-tasks
 
-
-# Please make sure to install the latest version of this plugin (at least 1.5.0) to prevent a potential corruption of your attachments (Sorry 🙇‍♂️) Thank you to @carlosrusso. 
-
+This plugin does something different however.
 
 ## Features
 
--   List tasks
--   Create tasks
--   Edit tasks (Will create a new task and delete the old one)
--   Mark as done / todo
--   Delete done tasks
+Use this plugin when your TODO lives in Obsidian, but you're jealous of the integration points of Google Tasks.
 
-> Working with specific time is not supported by the Google API :(
+This is a simple plugin that imports one of your Google Tasks List into Obsidian, as a one-way operation.
+It immediately marks the tasks as Completed in Google Tasks.
 
 ## Installation
 
--   Download google-tasks from the latest [release](https://github.com/YukiGasai/obsidian-google-tasks/releases/)
--   Extract zip into `.obsidian/plugins` folder
--   Restart Obsidian
--   Activate inside the obsidian settings page
--   [Create Google Cloud Project](https://console.cloud.google.com/projectcreate?)
--   [Activate Google Tasks API](https://console.cloud.google.com/marketplace/product/google/tasks.googleapis.com?q=search&referrer=search&project=iron-core-327018)
--   [Configure OAUTH screen](https://console.cloud.google.com/apis/credentials/consent?)
-    -   Select Extern
-    -   Fill necessary inputs
-    -   Add your email as tester if using "@gmail" add gmail and googlemail
--   [Add API Token](https://console.cloud.google.com/apis/credentials)
--   [Add OAUTH client](https://console.cloud.google.com/apis/credentials/oauthclient)
-    -   select Webclient
-    -   add `http://127.0.0.1:42813` as Javascript origin
-    -   add `http://127.0.0.1:42813/callback` as redirect URI
--   add the keys into the fields under the plugin settings
--   Press Login
+- Download google-tasks from the latest [release](https://github.com/abourget/obsidian-google-tasks-import/releases/)
+- Extract zip into `.obsidian/plugins` folder
+- Restart Obsidian
+- Activate the plugin in the Obsidian Settings page
+- [Create Google Cloud Project](https://console.cloud.google.com/projectcreate?) if you don't have one already
+- [Activate Google Tasks API](https://console.cloud.google.com/marketplace/product/google/tasks.googleapis.com?q=search&referrer=search&project=iron-core-327018)
+  - This must be done by the admin of the account, or the domain (for Google Workspaces).
+- [Configure OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent?) if it wasn't done already
+  - Select Extern
+  - Fill necessary inputs
+  - Add your email as tester if using "@gmail" add gmail and googlemail
+- [Add API Token](https://console.cloud.google.com/apis/credentials)
+  - Hit "+ CREATE CREDENTIALS"
+  - Select "OAuth client ID"
+  - Select _Application type_ = "Web application""
+  - Give it a meaningful name (like "Obsidian Google Task Import")
+  - Add `http://127.0.0.1:42813` under "Authorized Javascript origins"
+  - Add `http://127.0.0.1:42813/callback` under "Authorized redirect URIs"
+- add the keys into the fields under the plugin settings
+- Press Login
 
 ### Using the plugin on Mobile (work around)
 
--   Login on a desktop device
--   Use the `Copy Google Refresh Token to Clipboard` command on that device
--   Install the plugin on the phone
--   Instead of `Login` paste the token from the desktop device into the Refresh token field on the phone
+- Login on a desktop device
+- Use the `Copy Google Refresh Token to Clipboard` command on that device
+- Install the plugin on the phone
+- Paste the token from the desktop device into the _Refresh token_ field that appears only on Mobile.
 
 ## Usage
 
-### Google Task View
+### Commands
 
--   Open view by pressing the checkmark icon in the left sidebar
--   View will open and list your tasks
-    -   Complete them by clicking the checkbox
-    -   Edit them by long clicking the task
-    -   Show and hide the todo and done list by pressing the title texts
-    -   Force update the list by pressing on Google Tasks
-    -   The list will check for changes in a set interval (changeable in settings)
-    -   Press the plus button to create a new task
-    -   Use the dropdown to switch between lists
+Call the command `Insert Uncompleted Google Tasks` to import tasks from Google Tasks from your list, at the beginning of the line where the cursor lies.
+
+### Use a button
+
+Insert something like:
+
+```markdown
+`BUTTON[import-google-tasks]`
+```
+
+where you want to load the tasks, after installing the [Meta Bind](https://obsidian.md/plugins?id=obsidian-meta-bind-plugin) plugin (see [docs](https://www.moritzjung.dev/obsidian-meta-bind-plugin-docs/guides/buttons/))
+
+and add this Button template to the Meta Bind config:
+
+```yaml
+label: Import Tasks
+icon: check-in-circle
+tooltip: Imports Google Tasks at cursor point
+id: import-google-tasks
+actions:
+  - type: command
+    command: obsidian-google-tasks-import:insert-uncompleted-google-tasks
+```
 
 ### Commands
 
@@ -70,3 +82,9 @@ Will open a popup to create a new task
 #### Insert Google Tasks
 
 Will insert a lost of all undone tasks into the current file. Checking the task inside the File will complete / incomplete it.
+
+### TODO
+
+- Remove the interval config and feature
+- Remove the notification config
+- Comment out the Confirmations config (in case someone wants to _not_ delete tasks when they are imported).

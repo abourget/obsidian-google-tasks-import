@@ -1,10 +1,10 @@
 {
-	"id": "obsidian-google-tasks",
-	"name": "Google Tasks",
-	"version": "1.5.2",
+	"id": "obsidian-google-tasks-import",
+	"name": "Google Tasks Importer",
+	"version": "1.0.0",
 	"minAppVersion": "0.12.0",
-	"description": "Interact with your Google Tasks from Inside Obsidian",
-	"author": "YukiGasai",
-	"authorUrl": "https://github.com/YukiGasai",
+	"description": "Define a Google Tasks list to one-way import into Obsidian",
+	"author": "abourget",
+	"authorUrl": "https://github.com/abourget",
 	"isDesktopOnly": false
 }

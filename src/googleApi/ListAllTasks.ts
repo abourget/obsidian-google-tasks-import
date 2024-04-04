@@ -84,7 +84,8 @@ export async function getAllTasksFromList(
 	plugin: GoogleTasks,
 	taskListId: string,
 	startDate:moment.Moment = null,
-	endDate:moment.Moment = null
+	endDate:moment.Moment = null,
+	completed = false,
 ): Promise<Task[]> {
 
 	try {
@@ -94,8 +95,9 @@ export async function getAllTasksFromList(
 		do {
 			let url = `https://tasks.googleapis.com/tasks/v1/lists/${taskListId}/tasks?`;
 			url += "maxResults=100";
-			url += "&showCompleted=true";
+			url += `&showCompleted=${completed}`;
 			url += "&showDeleted=false";
+			console.log("URL", url)
 
 			if (startDate && startDate.isValid()) {
 				url += `&dueMin=${startDate.local().startOf('day').toISOString()}`;

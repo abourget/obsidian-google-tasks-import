@@ -1,10 +1,9 @@
 import { getRT } from './helper/LocalStorage';
 import { Editor, MarkdownView, Plugin, WorkspaceLeaf, moment, Notice, TFile } from "obsidian";
 import type { GoogleTasksSettings } from "./helper/types";
-import { getAllUncompletedTasksOrderdByDue, getOneTaskById } from "./googleApi/ListAllTasks";
+import { getAllTasksFromList } from "./googleApi/ListAllTasks";
 import {
-	GoogleCompleteTaskById,
-	GoogleUnCompleteTaskById,
+	GoogleCompleteTask,
 } from "./googleApi/GoogleCompleteTask";
 import { CreateTaskModal } from "./modal/CreateTaskModal";
 import { GoogleTaskView, VIEW_TYPE_GOOGLE_TASK } from "./view/GoogleTaskView";
@@ -21,6 +20,7 @@ const DEFAULT_SETTINGS: GoogleTasksSettings = {
 	googleRefreshToken: "",
 	googleClientId: "",
 	googleClientSecret: "",
+	importTaskList: "",
 	askConfirmation: true,
 	refreshInterval: 60,
 	showNotice: true,
@@ -31,63 +31,62 @@ export default class GoogleTasks extends Plugin {
 	plugin: GoogleTasks;
 	showHidden = false;
 	openEvent: null;
-	initView = async () => {
-		if (
-			this.app.workspace.getLeavesOfType(VIEW_TYPE_GOOGLE_TASK).length ===
-			0
-		) {
-			await this.app.workspace.getRightLeaf(false).setViewState({
-				type: VIEW_TYPE_GOOGLE_TASK,
-			});
-		}
-		this.app.workspace.revealLeaf(
-			this.app.workspace.getLeavesOfType(VIEW_TYPE_GOOGLE_TASK).first()
-		);
-	};
+	// initView = async () => {
+	// 	if (
+	// 		this.app.workspace.getLeavesOfType(VIEW_TYPE_GOOGLE_TASK).length ===
+	// 		0
+	// 	) {
+	// 		await this.app.workspace.getRightLeaf(false).setViewState({
+	// 			type: VIEW_TYPE_GOOGLE_TASK,
+	// 		});
+	// 	}
+	// 	this.app.workspace.revealLeaf(
+	// 		this.app.workspace.getLeavesOfType(VIEW_TYPE_GOOGLE_TASK).first()
+	// 	);
+	// };
 
 	onLayoutReady = async() => {
-		
 
-		this.app.workspace.on("file-open", async (file:TFile) => {
-			if ( !file || file.extension !== "md") return;
-			let content = await this.app.vault.adapter.read(normalize(file.path));
-			if(!content.match("%%")) {
-				return;
-			}
+		// this.app.workspace.on("file-open", async (file:TFile) => {
+		// 	if ( !file || file.extension !== "md") return;
+		// 	let content = await this.app.vault.adapter.read(normalize(file.path));
+		// 	if(!content.match("%%")) {
+		// 		return;
+		// 	}
 		
-			const matches = [...content.matchAll(/\- \[[ xX]\] .* %%[A-Za-z0-9]{22}%%/g)]
-			let updated = false;
-			for(let match of matches) {
-				let line = match[0];
-				const id = match[0].match(/%%[A-Za-z0-9]{22}%%/)[0].substring(2).slice(0,-2);
-				try{
-					const task = await getOneTaskById(this,id);
-					if(task.status === "completed") {
+		// 	const matches = [...content.matchAll(/\- \[[ xX]\] .* %%[A-Za-z0-9]{22}%%/g)]
+		// 	let updated = false;
+		// 	for(let match of matches) {
+		// 		let line = match[0];
+		// 		const id = match[0].match(/%%[A-Za-z0-9]{22}%%/)[0].substring(2).slice(0,-2);
+		// 		try{
+		// 			const task = await getOneTaskById(this,id);
+		// 			if(task.status === "completed") {
 						
-						const indexOfX = line.indexOf("- [ ]")
+		// 				const indexOfX = line.indexOf("- [ ]")
 					
-						if(indexOfX > -1){
-							line = line.replace("- [ ] ", "- [x] ")
-						}
+		// 				if(indexOfX > -1){
+		// 					line = line.replace("- [ ] ", "- [x] ")
+		// 				}
 						
-					}else {
-						const indexOfX = line.indexOf("- [x] ")
-						if(indexOfX > -1){
-							line = line.replace("- [x] ", "- [ ] ")
-						}
-					}
-				}catch(err){
-					console.log(err);
-					return;
-				}
+		// 			}else {
+		// 				const indexOfX = line.indexOf("- [x] ")
+		// 				if(indexOfX > -1){
+		// 					line = line.replace("- [x] ", "- [ ] ")
+		// 				}
+		// 			}
+		// 		}catch(err){
+		// 			console.log(err);
+		// 			return;
+		// 		}
 				
-				content = content.replace(match[0], line);
-				updated = true;
-			}
-			if(updated) {
-				await this.app.vault.adapter.write(normalize(file.path), content);
-			}
-		})
+		// 		content = content.replace(match[0], line);
+		// 		updated = true;
+		// 	}
+		// 	if(updated) {
+		// 		await this.app.vault.adapter.write(normalize(file.path), content);
+		// 	}
+		// })
 	}
 
 	async onload() {
@@ -95,115 +94,91 @@ export default class GoogleTasks extends Plugin {
 		this.plugin = this;
 		this.app.workspace.onLayoutReady(this.onLayoutReady);
 
-		this.registerView(
-			VIEW_TYPE_GOOGLE_TASK,
-			(leaf: WorkspaceLeaf) => new GoogleTaskView(leaf, this)
-		);
+		// this.registerView(
+		// 	VIEW_TYPE_GOOGLE_TASK,
+		// 	(leaf: WorkspaceLeaf) => new GoogleTaskView(leaf, this)
+		// );
 
-		this.addRibbonIcon(
-			"check-in-circle",
-			"Google Tasks",
-			(evt: MouseEvent) => {
-				this.initView();
-			}
-		);
+		// this.addRibbonIcon(
+		// 	"check-in-circle",
+		// 	"Google Tasks",
+		// 	(evt: MouseEvent) => {
+		// 		this.initView();
+		// 	}
+		// );
 
-		this.registerDomEvent(document, "click", (event) => {
-			if (!(event.target instanceof HTMLInputElement)) {
-				return;
-			}
+		// const createTodoListModal = async () => {
+		// 	const list = await getAllUncompletedTasksOrderdByDue(this);
 
-			const checkPointElement = event.target as HTMLInputElement;
-			if (
-				!checkPointElement.classList.contains("task-list-item-checkbox")
-			)
-				return;
+		// 	new TaskListModal(this, list).open();
+		// };
 
-			const idElement = checkPointElement.parentElement.parentElement.querySelectorAll(
-				".cm-comment.cm-list-1"
-			)[1] as HTMLElement;
+		// // This adds a simple command that can be triggered anywhere
+		// this.addCommand({
+		// 	id: "list-google-tasks",
+		// 	name: "List Google Tasks",
+		// 	checkCallback: (checking: boolean) => {
+		// 		const canRun = settingsAreCompleteAndLoggedIn(this.plugin, false);
 
-			const taskId = idElement.textContent;
+		// 		if (checking) {
+		// 			return canRun;
+		// 		}
+		// 		if (!canRun) {
+		// 			return;
+		// 		}
+		// 		createTodoListModal();
+		// 	},
+		// });
 
-			if (!settingsAreCompleteAndLoggedIn(this, false)) return;
+		// //Create a new task command
+		// this.addCommand({
+		// 	id: "create-google-task",
+		// 	name: "Create Google Tasks",
 
-			if (checkPointElement.checked) {
-				GoogleCompleteTaskById(this, taskId);
-			} else {
-				GoogleUnCompleteTaskById(this, taskId);
-			}
-		});
+		// 	checkCallback: (checking: boolean) => {
+		// 		const canRun = settingsAreCompleteAndLoggedIn(this, false);
 
-		const createTodoListModal = async () => {
-			const list = await getAllUncompletedTasksOrderdByDue(this);
+		// 		if (checking) {
+		// 			return canRun;
+		// 		}
 
-			new TaskListModal(this, list).open();
-		};
+		// 		if (!canRun) {
+		// 			return;
+		// 		}
 
-		// This adds a simple command that can be triggered anywhere
-		this.addCommand({
-			id: "list-google-tasks",
-			name: "List Google Tasks",
-			checkCallback: (checking: boolean) => {
-				const canRun = settingsAreCompleteAndLoggedIn(this.plugin, false);
+		// 		new CreateTaskModal(this).open();
+		// 	},
+		// });
 
-				if (checking) {
-					return canRun;
-				}
-				if (!canRun) {
-					return;
-				}
-				createTodoListModal();
-			},
-		});
+		// //Create a new task command
+		// this.addCommand({
+		// 	id: "create-google-task-with-insert",
+		// 	name: "Create Google Tasks and insert it",
+		// 	editorCheckCallback: (checking, editor, view): boolean => {
+		// 		const canRun = settingsAreCompleteAndLoggedIn(this, false);
 
-		//Create a new task command
-		this.addCommand({
-			id: "create-google-task",
-			name: "Create Google Tasks",
+		// 		if (checking) {
+		// 			return canRun;
+		// 		}
 
-			checkCallback: (checking: boolean) => {
-				const canRun = settingsAreCompleteAndLoggedIn(this, false);
+		// 		if (!canRun) {
+		// 			return;
+		// 		}
 
-				if (checking) {
-					return canRun;
-				}
-
-				if (!canRun) {
-					return;
-				}
-
-				new CreateTaskModal(this).open();
-			},
-		});
-
-		//Create a new task command
-		this.addCommand({
-			id: "create-google-task-with-insert",
-			name: "Create Google Tasks and insert it",
-			editorCheckCallback: (checking, editor, view): boolean => {
-				const canRun = settingsAreCompleteAndLoggedIn(this, false);
-
-				if (checking) {
-					return canRun;
-				}
-
-				if (!canRun) {
-					return;
-				}
-
-				new CreateTaskModal(this, editor).open();
-			}
-		});
+		// 		new CreateTaskModal(this, editor).open();
+		// 	}
+		// });
 
 		const writeTodoIntoFile = async (editor: Editor) => {
-			const tasks = await getAllUncompletedTasksOrderdByDue(this);
+			const tasks = await getAllTasksFromList(this, this.plugin.settings.importTaskList, null, null, false)
 			tasks.forEach((task) => {
-				editor.replaceRange(
-					taskToList(task),
-					editor.getCursor()
-				);
-			});
+				const cursor = editor.getCursor()
+				cursor.ch = 0
+				editor.replaceRange(taskToList(task), cursor)
+			})
+			tasks.forEach((task) => {
+				GoogleCompleteTask(this, task);
+			})
 		};
 
 		// This adds an editor command that can perform some operation on the current editor instance
@@ -230,28 +205,28 @@ export default class GoogleTasks extends Plugin {
 		});
 
 
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: "insert-google-tasks",
-			name: "Insert Google Tasks",
-			editorCheckCallback: (
-				checking: boolean,
-				editor: Editor,
-				view: MarkdownView
-			): boolean => {
-				const canRun = settingsAreCompleteAndLoggedIn(this, false);
+		// // This adds an editor command that can perform some operation on the current editor instance
+		// this.addCommand({
+		// 	id: "insert-google-tasks",
+		// 	name: "Insert Google Tasks",
+		// 	editorCheckCallback: (
+		// 		checking: boolean,
+		// 		editor: Editor,
+		// 		view: MarkdownView
+		// 	): boolean => {
+		// 		const canRun = settingsAreCompleteAndLoggedIn(this, false);
 
-				if (checking) {
-					return canRun;
-				}
+		// 		if (checking) {
+		// 			return canRun;
+		// 		}
 
-				if (!canRun) {
-					return;
-				}
+		// 		if (!canRun) {
+		// 			return;
+		// 		}
 
-				new SelectInsertTaskModal(this, editor).open();
-			},
-		});
+		// 		new SelectInsertTaskModal(this, editor).open();
+		// 	},
+		// });
 
 
 		//Copy Refresh token to clipboard

@@ -1,7 +1,7 @@
 {
-	"name": "google-tasks",
-	"version": "1.5.2",
-	"description": "This is a plugin for Obsidian to interact with your google tasks",
+	"name": "google-tasks-import",
+	"version": "1.0.0",
+	"description": "This is a plugin to import your Google Tasks into Obsidian",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
