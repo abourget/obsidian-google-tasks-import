@@ -142,7 +142,7 @@ createTaskElement(task:Task, containerEl: HTMLElement, isUnDoneList: boolean, is
 		trashElement.setClass("googleTaskTrash");
 		trashElement.setIcon("cross");
 		trashElement.onClick(() => {
-			if (this.plugin.settings.askConfirmation) {
+			if (this.plugin.settings.completeOnImport) {
 				new ConfirmationModal(this.plugin, async () =>
 					this.deleteTask(task)
 				).open();

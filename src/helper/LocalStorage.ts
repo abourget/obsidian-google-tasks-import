@@ -7,7 +7,7 @@
  * @returns googleAccessToken
  */
 export const getAT = (): string => {
-	return window.localStorage.getItem("googleTaskAccessToken") ?? "";
+	return window.localStorage.getItem(`${app.appId}-google-tasks-import-accessToken`) ?? "";
 };
 
 /**
@@ -15,7 +15,7 @@ export const getAT = (): string => {
  * @returns googleRefreshToken
  */
 export const getRT = (): string => {
-	return window.localStorage.getItem("googleTaskRefreshToken") ?? "";
+	return window.localStorage.getItem(`${app.appId}-google-tasks-import-refreshToken`) ?? "";
 };
 
 /**
@@ -24,7 +24,7 @@ export const getRT = (): string => {
  */
 export const getET = (): number => {
 	const expirationTimeString =
-		window.localStorage.getItem("googleTaskExpirationTime") ?? "0";
+		window.localStorage.getItem(`${app.appId}-google-tasks-import-expirationTime`) ?? "0";
 	return parseInt(expirationTimeString, 10);
 };
 
@@ -38,7 +38,7 @@ export const getET = (): number => {
  * @returns googleAccessToken
  */
 export const setAT = (googleAccessToken: string) => {
-	window.localStorage.setItem("googleTaskAccessToken", googleAccessToken);
+	window.localStorage.setItem(`${app.appId}-google-tasks-import-accessToken`, googleAccessToken);
 };
 
 /**
@@ -47,7 +47,7 @@ export const setAT = (googleAccessToken: string) => {
  * @returns googleRefreshToken
  */
 export const setRT = (googleRefreshToken: string) => {
-	window.localStorage.setItem("googleTaskRefreshToken", googleRefreshToken);
+	window.localStorage.setItem(`${app.appId}-google-tasks-import-refreshToken`, googleRefreshToken);
 };
 
 /**
@@ -57,7 +57,7 @@ export const setRT = (googleRefreshToken: string) => {
  */
 export const setET = (googleExpirationTime: number) => {
 	window.localStorage.setItem(
-		"googleTaskExpirationTime",
+		`${app.appId}-google-tasks-import-expirationTime`,
 		googleExpirationTime + ""
 	);
 };

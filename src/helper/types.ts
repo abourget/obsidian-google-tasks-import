@@ -3,7 +3,7 @@ export interface GoogleTasksSettings {
 	googleClientId: string;
 	googleClientSecret: string;
 	importTaskList: string,
-	askConfirmation: boolean;
+	completeOnImport: boolean;
 	refreshInterval: number;
 	showNotice: boolean;
 }

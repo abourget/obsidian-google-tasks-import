@@ -21,7 +21,7 @@ const DEFAULT_SETTINGS: GoogleTasksSettings = {
 	googleClientId: "",
 	googleClientSecret: "",
 	importTaskList: "",
-	askConfirmation: true,
+	completeOnImport: true,
 	refreshInterval: 60,
 	showNotice: true,
 };
@@ -171,14 +171,29 @@ export default class GoogleTasks extends Plugin {
 
 		const writeTodoIntoFile = async (editor: Editor) => {
 			const tasks = await getAllTasksFromList(this, this.plugin.settings.importTaskList, null, null, false)
+			const taskLines = []
 			tasks.forEach((task) => {
+
+				taskLines.push(taskToList(task))
+			})
+
+			const importButton = "`BUTTON[import-google-tasks]`"
+			const editorContent = editor.getValue();
+
+			if (editorContent.includes(importButton)) {
+				const updatedContent = editorContent.replace(importButton, importButton + "\n" + taskLines.join("").trimEnd());
+				editor.setValue(updatedContent);
+			} else {
 				const cursor = editor.getCursor()
 				cursor.ch = 0
-				editor.replaceRange(taskToList(task), cursor)
-			})
-			tasks.forEach((task) => {
-				GoogleCompleteTask(this, task);
-			})
+				editor.replaceRange(taskLines.join(""), cursor)	
+			}
+
+			if (this.plugin.settings.completeOnImport) {
+				tasks.forEach((task) => {
+					GoogleCompleteTask(this, task);
+				})
+			}
 		};
 
 		// This adds an editor command that can perform some operation on the current editor instance

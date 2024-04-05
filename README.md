@@ -88,3 +88,6 @@ Will insert a lost of all undone tasks into the current file. Checking the task 
 - Remove the interval config and feature
 - Remove the notification config
 - Comment out the Confirmations config (in case someone wants to _not_ delete tasks when they are imported).
+- Upon Login, call `refreshTaskList()`
+- Purge all the unused code.
+- Whoops, doesn't work across vaults. Keeps the same refresh token it seems?! Where is that stored? In something global to Electron, and not even to the particular Vault window?

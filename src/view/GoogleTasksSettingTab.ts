@@ -72,8 +72,8 @@ export class GoogleTasksSettingTab extends PluginSettingTab {
 				AuthSetting.addButton((button: ButtonComponent) => {
 					button.setButtonText("Login");
 					button.onClick(async (event) => {
-						if (settingsAreCorret(this.plugin)) {
-							LoginGoogle(this.plugin);
+						if (settingsAreCorrect(this.plugin)) {
+							LoginGoogle(this.plugin).then(refreshTaskLists);
 						}
 					});
 				});
@@ -91,8 +91,8 @@ export class GoogleTasksSettingTab extends PluginSettingTab {
 				AuthSetting.addButton((button: ButtonComponent) => {
 					button.setButtonText("Login");
 					button.onClick(async (event) => {
-						if (settingsAreCorret(this.plugin)) {
-							LoginGoogle(this.plugin);
+						if (settingsAreCorrect(this.plugin)) {
+							LoginGoogle(this.plugin).then(refreshTaskLists)
 
 							let count = 0;
 							const intId = setInterval(() => {
@@ -167,9 +167,8 @@ export class GoogleTasksSettingTab extends PluginSettingTab {
 			// });
 			const ctrl = taskListSetting.components[0] as DropdownComponent
 
-			ctrl.selectEl.empty()
-
 			if (!settingsAreCompleteAndLoggedIn(this.plugin)) {
+				ctrl.selectEl.empty()
 				ctrl.addOption(this.plugin.settings.importTaskList, "Login first")
 				return
 			}
@@ -179,16 +178,20 @@ export class GoogleTasksSettingTab extends PluginSettingTab {
 			for (const taskList of taskLists) {
 				tasks[taskList.id] = taskList.title;
 			}
+			if (this.plugin.settings.importTaskList === "") {
+				this.plugin.settings.importTaskList = taskLists[0].id
+			}
+			ctrl.selectEl.empty()
 			ctrl.addOptions(tasks)
 		}
 
 		new Setting(containerEl)
-			.setName("Confirmations")
-			.setDesc("Ask for confirmations when deleting a task")
+			.setName("Complete on import")
+			.setDesc("Mark imported tasks as completed")
 			.addToggle((toggle) => {
-				toggle.setValue(this.plugin.settings.askConfirmation);
+				toggle.setValue(this.plugin.settings.completeOnImport);
 				toggle.onChange(async (state) => {
-					this.plugin.settings.askConfirmation = state;
+					this.plugin.settings.completeOnImport = state;
 					await this.plugin.saveSettings();
 				});
 			});
@@ -246,7 +249,7 @@ export function settingsAreComplete(
 	return true;
 }
 
-export function settingsAreCorret(plugin: GoogleTasks): boolean {
+export function settingsAreCorrect(plugin: GoogleTasks): boolean {
 	if (
 		/^[0-9a-zA-z-]*\.apps\.googleusercontent\.com$/.test(
 			plugin.settings.googleClientId
