@@ -123,31 +123,12 @@ export class GoogleTasksSettingTab extends PluginSettingTab {
 						.setPlaceholder("Enter refresh token")
 						.setValue(this.plugin.settings.googleRefreshToken)
 						.onChange(async (value) => {
-							this.plugin.settings.googleRefreshToken = value;
 							setRT(value);
+							this.plugin.settings.googleRefreshToken = value;
+							await this.plugin.saveSettings()
 						})
 				);
 		}
-
-		// const taskListDropdown = new DropdownComponent(containerEl)
-		// 	.setName("Task List")
-		// 	.setDesc("Select a task list")
-		// 	.setValue(this.plugin.settings.selectedTaskList)
-		// 	.onChange(async (value) => {
-		// 		this.plugin.settings.selectedTaskList = value;
-		// 		await this.plugin.saveSettings();
-		// 	});
-
-		// const refreshTaskLists = async () => { {
-		// 	taskListDropdown.clearOptions();
-		// 	const taskLists = await getAllTaskLists(this.plugin);
-		// 	taskLists.forEach((taskList) => {
-		// 		taskListDropdown.addOption(taskList.id, taskList.title);
-		// 	});
-		// };
-
-		// refreshTaskLists();
-
 
 		const taskListSetting = new Setting(containerEl)
 			.setName("Task List To Import From")

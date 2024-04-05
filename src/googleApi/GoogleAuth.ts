@@ -77,18 +77,19 @@ export async function LoginGoogle(plugin: GoogleTasks) {
 						).searchParams;
 						const code = qs.get("code");
 						res.end(
-							"Authentication successful! Please return to obsidian."
+							"Authentication successful! Please return to Obsidian."
 						);
 						server.destroy();
 
 						// Now that we have the code, use that to acquire tokens.
 						const r = await oAuth2Client.getToken(code);
 
+						console.info("Saving request token to plugin settings, and saving settings")
+						plugin.settings.googleRefreshToken = r.tokens.refresh_token;
+						plugin.saveSettings()
 						setRT(r.tokens.refresh_token);
 						setAT(r.tokens.access_token);
 						setET(r.tokens.expiry_date);
-
-						console.info("Tokens acquired.");
 					}
 				} catch (e) {
 					console.error("Error getting Tokens.");
